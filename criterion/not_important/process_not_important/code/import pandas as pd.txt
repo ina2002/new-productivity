@@ -1,0 +1,40 @@
+import pandas as pd
+
+# 读取文件（注意路径中的反斜杠）
+regression = pd.read_excel("E:/github/new-productivity/criterion/file.xlsx", 
+                          sheet_name='regression', 
+                          usecols=[2],  # 第三列
+                          header=0, 
+                          names=['原始数据'])
+
+reference = pd.read_excel("E:/github/new-productivity/criterion/file.xlsx",
+                         sheet_name='reference',
+                         usecols=[0],  # 第一列
+                         header=0,
+                         names=['文献信息'])
+
+# 生成R矩阵（取最后两个字符）
+R = regression['原始数据'].apply(lambda x: str(x)[-2:] if pd.notnull(x) else '')
+
+# 构建E矩阵的搜索字典（行号从1开始）
+E_dict = {i+1: str(row['文献信息']) for i, row in reference.iterrows()}
+
+# 执行匹配
+I = []
+for r_value in R:
+    found = False
+    for line_num, e_content in E_dict.items():
+        if r_value in e_content:
+            I.append(line_num)
+            found = True
+            break
+    if not found:
+        I.append(None)  # 未找到标记为空
+
+# 结果输出
+result = pd.DataFrame({
+    'R值': R,
+    '匹配行号': I,
+    '原始数据': regression['原始数据']
+})
+result.to_excel("E:/github/new-productivity/criterion/匹配结果.xlsx", index=False)

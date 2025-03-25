@@ -1,0 +1,29 @@
+
+# 读取数据（修改为你的文件路径）"E:/github/new-productivity/criterion/file.xlsx"
+
+
+from openpyxl import load_workbook
+from openpyxl import Workbook
+source_wb = load_workbook("E:/github/new-productivity/criterion/file.xlsx")
+
+ws = source_wb.active
+
+# 创建新工作簿
+result_wb = Workbook()
+result_ws = result_wb.active
+result_ws.title = "合并单元格统计"
+result_ws.append(["合并内容", "合并单元格数"])  # 添加标题
+
+# 遍历并记录合并单元格
+for merge_range in ws.merged_cells.ranges:
+    cell_value = ws.cell(merge_range.min_row, merge_range.min_col).value
+    merged_count = (merge_range.max_row - merge_range.min_row + 1) * \
+                   (merge_range.max_col - merge_range.min_col + 1)
+    
+    # 处理空值情况
+    result_value = cell_value if cell_value is not None else "[空值]"
+    result_ws.append([result_value, merged_count])
+
+# 保存新文件（自动覆盖同名文件）
+result_wb.save("E:/github/new-productivity/criterion/合并单元格统计结果.xlsx")
+print("结果已保存至：合并单元格统计结果.xlsx")
